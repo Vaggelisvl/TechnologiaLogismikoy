@@ -2,7 +2,6 @@ package com.technology.technologysoftware.service;
 
 
 import com.technology.technologysoftware.domain.User;
-import com.technology.technologysoftware.domain.UserRole;
 import com.technology.technologysoftware.repository.RoleRepository;
 import com.technology.technologysoftware.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,12 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
-
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
-    private RoleRepository roleRepository;
 
     @Override
     @Transactional
