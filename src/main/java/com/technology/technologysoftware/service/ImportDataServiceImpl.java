@@ -50,10 +50,10 @@ public class ImportDataServiceImpl implements ImportDataService {
             log.info("Fields size:{}",fields.length);
             log.info("Lines: {}", line);
             // Perform validation based on the provided code
-//            if (fields.length != 6) {
-//                // Invalid number of fields
-//                continue;
-//            }
+            if (fields.length != 7) {
+                // Invalid number of fields
+                continue;
+            }
 
             long timestampAdded;
             try {
