@@ -40,6 +40,8 @@ dependencies {
     implementation group: 'javax.persistence', name: 'javax.persistence-api', version: '2.2'
     implementation group: 'javax.validation', name: 'validation-api', version: '2.0.1.Final'
     implementation group: 'org.springdoc', name: 'springdoc-openapi-ui', version: '1.6.13'
+    implementation group: 'com.opencsv', name: 'opencsv', version: '3.7'
+
 
 
 

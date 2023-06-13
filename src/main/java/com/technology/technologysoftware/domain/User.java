@@ -24,6 +24,7 @@ import java.util.Set;
 public class User {
 
     @Id
+    @JsonProperty("id")
     private Long id;
 
     @JsonProperty("firstName")
