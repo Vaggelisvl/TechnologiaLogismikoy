@@ -9,5 +9,6 @@ import java.util.List;
 
 public interface PointOfInterestRepository extends MongoRepository<PointOfInterest, String> {
 
-    List<PointOfInterest> findAllByTitleContainingAndKeywordsInAndCategoriesIn(String title, List<String> keywords, List<Category> categories);
+    List<PointOfInterest> findAllByTitleContainingIgnoreCaseAndKeywordsInIgnoreCaseAndCategoriesInIgnoreCase(String title, List<String> keywords, List<Category> categories);
+
 }

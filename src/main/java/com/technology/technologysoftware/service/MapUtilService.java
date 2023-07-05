@@ -15,5 +15,4 @@ public interface MapUtilService {
 
     double calculateDistance(double longitude, double latitude);
     List<Category> getAllCategories();
-    boolean isInteger(String str);
 }

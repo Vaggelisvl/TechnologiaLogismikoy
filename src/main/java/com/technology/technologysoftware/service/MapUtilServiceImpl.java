@@ -40,23 +40,25 @@ public class MapUtilServiceImpl implements MapUtilService{
         log.info("MapUtilService::search() , SearchPoisRequest: {}",searchPoisRequest);
         // Extract filter parameters
         Distance distance = searchPoisRequest.getFilters().getDistance();
-        List<String> keywords = searchPoisRequest.getFilters().getKeywords();
+        //get the keyWords and transform them to lowercase
+        List<String> keywords = searchPoisRequest.getFilters().getKeywords().stream().map(String::toLowerCase).collect(Collectors.toList());
         List<String> categories = searchPoisRequest.getFilters().getCategories();
-        String searchText = searchPoisRequest.getText();
+        //get the categories and transform them to lowercase
+        String searchText = searchPoisRequest.getText().toLowerCase();
         List<Category> categoriesList = categories.stream()
                 .map(Integer::parseInt) // Convert each category ID string to an integer
                 .map(categoryRepository::findById) // Fetch the Category object for each ID
                 .filter(Optional::isPresent) // Filter out any non-existent categories
                 .map(Optional::get) // Get the actual Category object from the Optional
                 .collect(Collectors.toList());
-        log.info("Categories: {}",categoriesList);
+        log.debug("Categories: {}",categoriesList);
 
         // Calculate distance in meters
         double distanceInMeters = distance.getKm() * 1000;
-        log.info("distanceInMeters: {}",distanceInMeters);
+        log.debug("distanceInMeters: {}",distanceInMeters);
 
         // Perform the search using PointOfInterestRepository
-        List<PointOfInterest> searchResults = pointOfInterestRepository.findAllByTitleContainingAndKeywordsInAndCategoriesIn(searchText, keywords, categoriesList);
+        List<PointOfInterest> searchResults = pointOfInterestRepository.findAllByTitleContainingIgnoreCaseAndKeywordsInIgnoreCaseAndCategoriesInIgnoreCase(searchText, keywords, categoriesList);
         if (!searchResults.isEmpty()) {
             // Filter the results based on distance
             List<PointOfInterest> filteredResults = filterByDistance(searchResults, distanceInMeters);
@@ -93,10 +95,6 @@ public class MapUtilServiceImpl implements MapUtilService{
     @Override
     public double calculateDistance(double longitude, double latitude) {
         log.info("ImportDataService::calculateDistance(), longitude:{} , latitude:{}",longitude,latitude);
-        // Implement your distance calculation logic here
-        // This could be using a library or a custom implementation based on the formula you prefer
-        // For simplicity, let's assume a basic distance calculation using longitude and latitude difference
-        // You can replace this with your actual distance calculation logic
         double referenceLongitude = 0.0; // Reference longitude for distance calculation
         double referenceLatitude = 0.0;  // Reference latitude for distance calculation
 
@@ -110,17 +108,8 @@ public class MapUtilServiceImpl implements MapUtilService{
     @Override
     public List<Category> getAllCategories() {
         log.info("MapUtilService::getAllCategories()");
-
         return categoryRepository.findAll();
     }
 
-    @Override
-    public boolean isInteger(String str) {
-        try {
-            Integer.parseInt(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
+
 }
