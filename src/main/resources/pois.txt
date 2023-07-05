@@ -1,0 +1,4 @@
+timestampAdded	ttitle	description	latitude	longitude	keywords	categories
+1625266800	The Eiffel Tower	The Eiffel Tower is a wrought-iron lattice tower located in Paris, France.	488.584	22.945	Landmark,Tourist Attraction,Tourist Spot,Architecture	1,2
+1625266801	Central Park	Central Park is an urban park located in Manhattan, New York City.	407.829	-739.654	park,tManhattan,Tourist Attraction,Park,Recreation	Park
+1625266803	The Colosseum	The Colosseum is an ancient amphitheater located in Rome, Italy.	418.902	124.922	landmark,Rome,Historical Site,Historical Monument,Archaeological Site	3

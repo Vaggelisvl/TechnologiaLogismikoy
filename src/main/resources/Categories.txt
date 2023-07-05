@@ -1,0 +1,4 @@
+1	sighseeing
+2	place
+3	place3
+4	Park
