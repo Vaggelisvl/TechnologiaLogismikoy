@@ -49,7 +49,7 @@ public class ImportDataServiceImpl implements ImportDataService {
 
             String[] row;
             while ((row = csvReader.readNext()) != null) {
-                log.info("Line: {}", Arrays.toString(row));
+                log.debug("Line: {}", Arrays.toString(row));
 
                 long timestampAdded;
                 try {
@@ -96,10 +96,6 @@ public class ImportDataServiceImpl implements ImportDataService {
 
                 PointOfInterest poi = new PointOfInterest(timestampAdded, title, description, latitude, longitude, keywords, categoryList); // Assuming categories will be empty for now
 
-                // Save the valid POI to the database
-//                log.info("Poi:{}", poi.);
-
-//                pointOfInterestRepository.save(poi);
                 importedPOIs.add(poi);
             }
         } catch (CsvValidationException ex) {
@@ -196,7 +192,6 @@ public class ImportDataServiceImpl implements ImportDataService {
                     continue;
                 }
                 categoriesName.add(category);
-//                        isInteger(category) ? categoriesId.add(Integer.parseInt(category)) : categoriesName.add(category);
             }
             if (categoriesName.size() > 0) {
                 categoriesName.forEach(categoryName -> {

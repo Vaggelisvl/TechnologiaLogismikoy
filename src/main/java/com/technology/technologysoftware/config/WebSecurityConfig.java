@@ -19,11 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-//@EnableWebSecurity
-@EnableGlobalMethodSecurity(
-        // securedEnabled = true,
-        // jsr250Enabled = true,
-        prePostEnabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig {
     @Autowired
     UserDetailsServiceImpl userDetailsService;
@@ -58,8 +54,8 @@ public class WebSecurityConfig {
                 .antMatchers("/api/test/**").permitAll()
 
                 .antMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Allow access to Swagger UI
-                .antMatchers(HttpMethod.POST, "/api/v1/map-services/**").permitAll() // Allow access to the register endpoint
-                .antMatchers(HttpMethod.GET, "/api/v1/map-services/**").permitAll() // Allow access to the register endpoint
+                .antMatchers(HttpMethod.POST, "/api/v1/map-services/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/api/v1/map-services/**").permitAll()
                 .anyRequest().authenticated();
 
         http.authenticationProvider(authenticationProvider());

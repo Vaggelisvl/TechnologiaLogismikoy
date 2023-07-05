@@ -6,7 +6,6 @@ import com.technology.technologysoftware.domain.PointOfInterest;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface PointOfInterestRepository extends MongoRepository<PointOfInterest, String> {
 
