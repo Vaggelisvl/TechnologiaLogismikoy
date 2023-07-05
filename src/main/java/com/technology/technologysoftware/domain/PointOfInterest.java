@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,11 +19,12 @@ public class PointOfInterest {
     @JsonProperty("timestampAdded")
     private long timestampAdded;
 
+    @Id
     @JsonProperty("title")
     private String title;
 
     @JsonProperty("description")
-    private Optional<String> description;
+    private String description;
 
     @JsonProperty("latitude")
     private double latitude;
@@ -30,8 +33,8 @@ public class PointOfInterest {
     private double longitude;
 
     @JsonProperty("keywords")
-    private Optional<List<String>> keywords;
+    private List<String> keywords;
 
     @JsonProperty("categories")
-    private Optional<List<Category>> categories;
+    private List<Category> categories;
 }

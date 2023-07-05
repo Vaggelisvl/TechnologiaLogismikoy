@@ -56,13 +56,10 @@ public class WebSecurityConfig {
                 .authorizeRequests()
                 .antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/api/test/**").permitAll()
+
                 .antMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll() // Allow access to Swagger UI
                 .antMatchers(HttpMethod.POST, "/api/v1/map-services/**").permitAll() // Allow access to the register endpoint
-//                .antMatchers(HttpMethod.POST, "/api/v1/map-services/auth/login").permitAll() // Allow access to the login endpoint
-//                .antMatchers(HttpMethod.POST, "/api/v1/map-services/auth/initialize").permitAll() // Allow access to the login endpoint
-//                .antMatchers(HttpMethod.POST, "/api/v1/map-services/auth/key").permitAll() // Allow access to the login endpoint
-//                .antMatchers(HttpMethod.POST, "/api/v1/map-services/import/**").permitAll() // Allow access to the login endpoint
-//                .antMatchers(HttpMethod.POST, "/api/v1/map-services/search").permitAll() // Allow access to the login endpoint
+                .antMatchers(HttpMethod.GET, "/api/v1/map-services/**").permitAll() // Allow access to the register endpoint
                 .anyRequest().authenticated();
 
         http.authenticationProvider(authenticationProvider());

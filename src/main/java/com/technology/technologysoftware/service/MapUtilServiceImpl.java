@@ -49,9 +49,11 @@ public class MapUtilServiceImpl implements MapUtilService{
                 .filter(Optional::isPresent) // Filter out any non-existent categories
                 .map(Optional::get) // Get the actual Category object from the Optional
                 .collect(Collectors.toList());
+        log.info("Categories: {}",categoriesList);
 
         // Calculate distance in meters
         double distanceInMeters = distance.getKm() * 1000;
+        log.info("distanceInMeters: {}",distanceInMeters);
 
         // Perform the search using PointOfInterestRepository
         List<PointOfInterest> searchResults = pointOfInterestRepository.findAllByTitleContainingAndKeywordsInAndCategoriesIn(searchText, keywords, categoriesList);
@@ -103,5 +105,22 @@ public class MapUtilServiceImpl implements MapUtilService{
 
         // Assuming a simple distance calculation using the difference in longitude and latitude
         return Math.sqrt(Math.pow(longitudeDiff, 2) + Math.pow(latitudeDiff, 2));
+    }
+
+    @Override
+    public List<Category> getAllCategories() {
+        log.info("MapUtilService::getAllCategories()");
+
+        return categoryRepository.findAll();
+    }
+
+    @Override
+    public boolean isInteger(String str) {
+        try {
+            Integer.parseInt(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }

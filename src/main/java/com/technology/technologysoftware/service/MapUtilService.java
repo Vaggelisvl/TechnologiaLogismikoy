@@ -1,5 +1,6 @@
 package com.technology.technologysoftware.service;
 
+import com.technology.technologysoftware.domain.Category;
 import com.technology.technologysoftware.domain.PointOfInterest;
 import com.technology.technologysoftware.domain.request.searchPois.SearchPoisRequest;
 import com.technology.technologysoftware.domain.response.searchPois.SearchPoisResponse;
@@ -13,4 +14,6 @@ public interface MapUtilService {
     List<PointOfInterest> filterByDistance(List<PointOfInterest> pointsOfInterest, double distanceInMeters);
 
     double calculateDistance(double longitude, double latitude);
+    List<Category> getAllCategories();
+    boolean isInteger(String str);
 }
