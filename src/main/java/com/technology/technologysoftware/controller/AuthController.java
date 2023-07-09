@@ -13,16 +13,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 
 @RestController
 @RequestMapping("api/v1/map-services/auth")
 @Slf4j
+@CrossOrigin(origins = "*")
 public class AuthController {
 
     private final AuthService authService;
@@ -42,12 +40,14 @@ public class AuthController {
         return authService.authenticateUser(loginRequest);
 
     }
+
     @Operation(description = "Registration of new user operation")
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationRequest userRegistrationRequest) {
+    public ResponseEntity<?> registerUser(@RequestBody @Valid UserRegistrationRequest userRegistrationRequest) {
         return authService.registerUser(userRegistrationRequest);
 
     }
+
     @Operation(description = "Initialization of the roles document in database which register operation is using ")
     @PostMapping("/initialize")
     public String init() {
