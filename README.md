@@ -1,6 +1,6 @@
 Requirements:
 MongoDB image on docker .
-Java Version 1.8
+Java Version 11
 
 Steps:
 Clone the repository to your local machine.
