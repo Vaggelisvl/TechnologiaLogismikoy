@@ -9,7 +9,7 @@ import com.opencsv.exceptions.CsvValidationException;
 import com.technology.technologysoftware.auth.jwt.JwtUtils;
 import com.technology.technologysoftware.domain.Category;
 import com.technology.technologysoftware.domain.PointOfInterest;
-import com.technology.technologysoftware.domain.response.importData.ImportDataResponse;
+import com.technology.technologysoftware.domain.response.import_data.ImportDataResponse;
 import com.technology.technologysoftware.repository.CategoryRepository;
 import com.technology.technologysoftware.repository.PointOfInterestRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -44,73 +44,102 @@ public class ImportDataServiceImpl implements ImportDataService {
     public ImportDataResponse importPOIs(MultipartFile file) throws IOException {
         log.info("ImportDataService::importPOIs() , MultipartFile: {}", file.getName());
         List<PointOfInterest> importedPOIs = new ArrayList<>();
-        try (CSVReader csvReader = new CSVReaderBuilder(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)).withCSVParser(new CSVParserBuilder().withSeparator('\t').build()).build()) {
-            csvReader.readNext(); // Assuming the first row contains headers
+
+        try (CSVReader csvReader = createCsvReader(file)) {
+            csvReader.readNext();
 
             String[] row;
             while ((row = csvReader.readNext()) != null) {
                 log.debug("Line: {}", Arrays.toString(row));
-
-                long timestampAdded;
-                try {
-                    timestampAdded = Long.parseLong(row[0]);
-                } catch (NumberFormatException e) {
-                    log.error(e.getMessage());
-                    // Invalid timestampAdded value
-                    continue;
+                PointOfInterest poi = processRow(row);
+                if (poi != null) {
+                    importedPOIs.add(poi);
                 }
-
-                String title = row[1].trim();
-                if (title.isEmpty()) {
-                    log.error("Title is empty");
-                    // Empty title
-                    continue;
-                }
-
-                String description = row[2].trim();
-
-                double latitude;
-                try {
-                    latitude = Double.parseDouble(row[3]);
-                } catch (NumberFormatException e) {
-                    log.error(e.getMessage());
-                    // Invalid latitude value
-                    continue;
-                }
-
-                double longitude;
-                try {
-                    longitude = Double.parseDouble(row[4]);
-                } catch (NumberFormatException e) {
-                    log.error(e.getMessage());
-                    // Invalid longitude value
-                    continue;
-                }
-
-                List<String> keywords = Arrays.stream(row[5].split(",")).map(String::trim).filter(s -> !s.isEmpty())
-                        .collect(Collectors.toList());
-                //mapping the category based on id or name
-                List<String> categoriesStringList = Arrays.stream(row[6].split(",")).map(String::trim).filter(s -> !s.isEmpty())
-                        .collect(Collectors.toList());
-                List<Category> categoryList = this.assingPoisCatories(categoriesStringList);
-
-                PointOfInterest poi = new PointOfInterest(timestampAdded, title, description, latitude, longitude, keywords, categoryList); // Assuming categories will be empty for now
-
-                importedPOIs.add(poi);
             }
         } catch (CsvValidationException ex) {
             log.error("Error Occurred: {}", ex.getMessage());
         }
-        this.objectToJson(importedPOIs);
 
+        this.objectToJson(importedPOIs);
         pointOfInterestRepository.saveAll(importedPOIs);
 
+        return createImportDataResponse(importedPOIs);
+    }
 
+    private CSVReader createCsvReader(MultipartFile file) throws IOException {
+        return new CSVReaderBuilder(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))
+                .withCSVParser(new CSVParserBuilder().withSeparator('\t').build())
+                .build();
+    }
+
+    private PointOfInterest processRow(String[] row) {
+        long timestampAdded = parseLong(row[0]);
+        if (timestampAdded == -1) {
+            return null;
+        }
+
+        String title = row[1].trim();
+        if (title.isEmpty()) {
+            log.error("Title is empty");
+            return null;
+        }
+
+        String description = row[2].trim();
+
+        double latitude = parseDouble(row[3]);
+        if (latitude == -1) {
+            return null;
+        }
+
+        double longitude = parseDouble(row[4]);
+        if (longitude == -1) {
+            return null;
+        }
+
+        List<String> keywords = Arrays.stream(row[5].split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+
+        List<String> categoriesStringList = Arrays.stream(row[6].split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+
+        List<Category> categoryList = this.assingPoisCatories(categoriesStringList);
+
+        return createPoi(timestampAdded, title, description, latitude, longitude, keywords, categoryList);
+    }
+
+    private long parseLong(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            log.error(e.getMessage());
+            return -1;
+        }
+    }
+
+    private double parseDouble(String value) {
+        try {
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            log.error(e.getMessage());
+            return -1;
+        }
+    }
+
+    private PointOfInterest createPoi(long timestampAdded, String title, String description, double latitude, double longitude, List<String> keywords, List<Category> categoryList) {
+        return new PointOfInterest(timestampAdded, title, description, latitude, longitude, keywords, categoryList);
+    }
+
+    private ImportDataResponse createImportDataResponse(List<PointOfInterest> importedPOIs) {
         ImportDataResponse importDataResponse = new ImportDataResponse();
-        List<ImportDataResponse.DataItem> categoryDataList = importedPOIs.stream().map(ImportDataResponse.PoiData::new).collect(Collectors.toList());
+        List<ImportDataResponse.DataItem> categoryDataList = importedPOIs.stream()
+                .map(ImportDataResponse.PoiData::new)
+                .collect(Collectors.toList());
         importDataResponse.setData(categoryDataList);
         return importDataResponse;
-
     }
 
     @Override
@@ -184,39 +213,35 @@ public class ImportDataServiceImpl implements ImportDataService {
     public List<Category> assingPoisCatories(List<String> categories) {
         List<Category> categoryList = new ArrayList<>();
         if (categories != null) {
-            List<String> categoriesName = new ArrayList<>();
-            List<Integer> categoriesId = new ArrayList<>();
-            for (String category : categories) {
-                if (isInteger(category)) {
-                    categoriesId.add(Integer.parseInt(category));
-                    continue;
-                }
-                categoriesName.add(category);
-            }
-            if (categoriesName.size() > 0) {
-                categoriesName.forEach(categoryName -> {
-                    if (categoryRepository.findByName(categoryName).isPresent())
-                        categoryList.add(categoryRepository.findByName(categoryName).get());
-                    else
-                        log.error("Category with name:{} does not exist", categoryName);
-                });
-            }
-
-
-            if (categoriesId.size() > 0) {
-                categoriesId.forEach(categoryId -> {
-                    if (categoryRepository.findById(categoryId).isPresent())
-                        categoryList.add(categoryRepository.findById(categoryId).get());
-                    else
-                        log.error("Category with id:{} does not exist", categoryId);
-                });
-
-            }
+            List<String> categoriesName = processCategoryNames(categories);
+            List<Integer> categoriesId = processCategoryIds(categories);
+            addCategoriesByName(categoryList, categoriesName);
+            addCategoriesById(categoryList, categoriesId);
         }
-
-
         return categoryList;
+    }
 
+    private List<String> processCategoryNames(List<String> categories) {
+        return categories.stream()
+                .filter(category -> !isInteger(category))
+                .collect(Collectors.toList());
+    }
+
+    private List<Integer> processCategoryIds(List<String> categories) {
+        return categories.stream()
+                .filter(this::isInteger)
+                .map(Integer::parseInt)
+                .collect(Collectors.toList());
+    }
+
+    private void addCategoriesByName(List<Category> categoryList, List<String> categoriesName) {
+        categoriesName.forEach(categoryName -> categoryRepository.findByName(categoryName).ifPresentOrElse(categoryList::add,
+                () -> log.error("Category with name:{} does not exist", categoryName)));
+    }
+
+    private void addCategoriesById(List<Category> categoryList, List<Integer> categoriesId) {
+        categoriesId.forEach(categoryId -> categoryRepository.findById(categoryId).ifPresentOrElse(categoryList::add,
+                () -> log.error("Category with id:{} does not exist", categoryId)));
     }
 
     @Override
@@ -225,10 +250,10 @@ public class ImportDataServiceImpl implements ImportDataService {
         try {
             for (T className : classList) {
                 String json = gson.toJson(className);
-                log.info("\n" + "-".repeat(45) + "\n Poi: {} \n", json + "\n" + "-".repeat(45));
+                log.info("\n{}\n Poi: {} \n", "-".repeat(45), json + "\n" + "-".repeat(45));
             }
         } catch (Exception e) {
-            e.printStackTrace();
+           log.error("Error occurred: {}", e.getMessage());
         }
     }
 

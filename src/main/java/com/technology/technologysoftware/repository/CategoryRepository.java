@@ -8,5 +8,5 @@ import java.util.Optional;
 
 public interface CategoryRepository extends MongoRepository<Category,Integer> {
     List<Category> findAllById(Integer id);
-    Optional<Category> findByName(String Name);
+    Optional<Category> findByName(String name);
 }

@@ -1,4 +1,4 @@
-package com.technology.technologysoftware.domain.response.searchPois;
+package com.technology.technologysoftware.domain.response.search_pois;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.technology.technologysoftware.domain.PointOfInterest;

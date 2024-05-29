@@ -4,9 +4,9 @@ package com.technology.technologysoftware.service;
 import com.technology.technologysoftware.auth.jwt.JwtUtils;
 import com.technology.technologysoftware.domain.Category;
 import com.technology.technologysoftware.domain.PointOfInterest;
-import com.technology.technologysoftware.domain.request.searchPois.Distance;
-import com.technology.technologysoftware.domain.request.searchPois.SearchPoisRequest;
-import com.technology.technologysoftware.domain.response.searchPois.SearchPoisResponse;
+import com.technology.technologysoftware.domain.request.search_pois.SearchCriteria;
+import com.technology.technologysoftware.domain.request.search_pois.SearchPoisRequest;
+import com.technology.technologysoftware.domain.response.search_pois.SearchPoisResponse;
 import com.technology.technologysoftware.repository.CategoryRepository;
 import com.technology.technologysoftware.repository.PointOfInterestRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.isNull;
 
 @Service
 @Slf4j
@@ -37,91 +39,22 @@ public class MapUtilServiceImpl implements MapUtilService {
         if (!jwtUtils.validateJwtToken(token)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
         }
-        log.info("MapUtilService::search() , SearchPoisRequest: {}", searchPoisRequest);
-        Distance distance = null;
-        List<String> keywords = new ArrayList<>();
-        List<String> categories = new ArrayList<>();
-        String searchText = null;
-        List<Category> categoriesList = new ArrayList<>();
-        double distanceInMeters = 0;
-        List<PointOfInterest> searchResults = new ArrayList<>();
+        log.debug("MapUtilService::search() , SearchPoisRequest: {}", searchPoisRequest);
 
-        if (searchPoisRequest.getText() != null)
-            searchText = searchPoisRequest.getText().toLowerCase();
-
-
-        if (searchPoisRequest.getFilters() != null) {
-
-            if (searchPoisRequest.getFilters().getDistance() != null) {
-                distance = searchPoisRequest.getFilters().getDistance();
-                distanceInMeters = distance.getKm() * 1000;
-                log.debug("distanceInMeters: {}", distanceInMeters);
-            }
-
-
-            if (searchPoisRequest.getFilters().getKeywords() != null)
-                keywords = searchPoisRequest.getFilters().getKeywords().stream().map(String::toLowerCase).collect(Collectors.toList());
-
-            if (searchPoisRequest.getFilters().getCategories() != null) {
-                categories = searchPoisRequest.getFilters().getCategories();
-                categoriesList = categories.stream()
-                        .map(Integer::parseInt) // Convert each category ID string to an integer
-                        .map(categoryRepository::findById) // Fetch the Category object for each ID
-                        .filter(Optional::isPresent) // Filter out any non-existent categories
-                        .map(Optional::get) // Get the actual Category object from the Optional
-                        .collect(Collectors.toList());
-                log.debug("Categories: {}", categoriesList);
-            }
-            if (searchPoisRequest.getFilters().getDistance() != null && searchPoisRequest.getFilters().getCategories() != null
-                    && searchPoisRequest.getFilters().getKeywords() != null && searchPoisRequest.getText() != null) {
-
-                log.debug("Searching with full body");
-                searchResults = pointOfInterestRepository.findAllByTitleContainingIgnoreCaseAndKeywordsInIgnoreCaseAndCategoriesInIgnoreCase(searchText,
-                        keywords, categoriesList);
-
-            } else if (searchPoisRequest.getFilters().getDistance() == null && searchPoisRequest.getFilters().getCategories() != null
-                    && searchPoisRequest.getFilters().getKeywords() == null) {
-
-                log.debug("Searching with categories body");
-                searchResults = pointOfInterestRepository.findAllByCategoriesInIgnoreCase(categoriesList);
-
-            } else if (searchPoisRequest.getFilters().getDistance() == null && searchPoisRequest.getFilters().getCategories() == null
-                    && searchPoisRequest.getFilters().getKeywords() != null && searchPoisRequest.getText() == null) {
-
-                log.debug("Searching with keywords body");
-                searchResults = pointOfInterestRepository.findAllByKeywordsInIgnoreCase(keywords);
-            } else if (searchPoisRequest.getFilters().getCategories() != null && searchPoisRequest.getFilters().getKeywords() != null
-                    && searchPoisRequest.getText() == null) {
-                log.debug("Searching with keywords and categories and title body");
-                searchResults = pointOfInterestRepository.findAllByKeywordsInIgnoreCaseAndCategoriesInIgnoreCase(keywords, categoriesList);
-            }
-
-        } else if (searchPoisRequest.getText() != null) {
-            searchResults = pointOfInterestRepository.findAllByTitleInIgnoreCase(searchText);
-            log.debug("Searching with title");
-        } else {
-            log.info("Searching with nothing");
-            searchResults = pointOfInterestRepository.findAll();
-        }
-
+        SearchCriteria searchCriteria = buildSearchCriteria(searchPoisRequest);
+        List<PointOfInterest> searchResults = performSearch(searchCriteria);
 
         if (!searchResults.isEmpty()) {
             List<PointOfInterest> filteredResults = searchResults;
             // Filter the results based on distance
-            if (searchPoisRequest.getFilters() != null) {
-                if (searchPoisRequest.getFilters().getDistance() != null)
-                    filteredResults = filterByDistance(searchResults, distanceInMeters);
-
-            }
-
+            if (searchCriteria.getDistanceInMeters() > 0)
+                filteredResults = filterByDistance(searchResults, searchCriteria.getDistanceInMeters());
 
             // Create the search response object
             SearchPoisResponse searchPoisResponse = new SearchPoisResponse();
 
-            if (searchPoisRequest.getStart() != null)
-                searchPoisResponse.setStart(searchPoisRequest.getStart());
-            if (searchPoisRequest.getCount() != null)
-                searchPoisResponse.setCount(searchPoisRequest.getCount());
+            if (!isNull(searchPoisRequest.getStart())) searchPoisResponse.setStart(searchPoisRequest.getStart());
+            if (!isNull(searchPoisRequest.getCount())) searchPoisResponse.setCount(searchPoisRequest.getCount());
 
             searchPoisResponse.setTotal(filteredResults.size());
             searchPoisResponse.setData(filteredResults);
@@ -132,9 +65,53 @@ public class MapUtilServiceImpl implements MapUtilService {
         return null;
     }
 
+    private SearchCriteria buildSearchCriteria(SearchPoisRequest searchPoisRequest) {
+        SearchCriteria searchCriteria = new SearchCriteria();
+
+        if (!isNull(searchPoisRequest.getText()))
+            searchCriteria.setSearchText(searchPoisRequest.getText().toLowerCase());
+
+        if (!isNull(searchPoisRequest.getFilters())) {
+            if (!isNull(searchPoisRequest.getFilters().getDistance())) {
+                double distanceInMeters = searchPoisRequest.getFilters().getDistance().getKm() * (double)1000;
+                searchCriteria.setDistanceInMeters(distanceInMeters);
+            }
+
+            if (!isNull(searchPoisRequest.getFilters().getKeywords()))
+                searchCriteria.setKeywords(searchPoisRequest.getFilters().getKeywords().stream().map(String::toLowerCase).collect(Collectors.toList()));
+
+            if (!isNull(searchPoisRequest.getFilters().getCategories())) {
+                List<Category> categoriesList = searchPoisRequest.getFilters().getCategories().stream()
+                        .map(Integer::parseInt) // Convert each category ID string to an integer
+                        .map(categoryRepository::findById) // Fetch the Category object for each ID
+                        .filter(Optional::isPresent) // Filter out any non-existent categories
+                        .map(Optional::get) // Get the actual Category object from the Optional
+                        .collect(Collectors.toList());
+                searchCriteria.setCategories(categoriesList);
+            }
+        }
+
+        return searchCriteria;
+    }
+
+    private List<PointOfInterest> performSearch(SearchCriteria searchCriteria) {
+        if (!isNull(searchCriteria.getSearchText()) && !isNull(searchCriteria.getKeywords()) && !isNull(searchCriteria.getCategories())) {
+            return pointOfInterestRepository.findAllByTitleContainingIgnoreCaseAndKeywordsInIgnoreCaseAndCategoriesInIgnoreCase(searchCriteria.getSearchText(),
+                    searchCriteria.getKeywords(), searchCriteria.getCategories());
+        } else if (!isNull(searchCriteria.getCategories())) {
+            return pointOfInterestRepository.findAllByCategoriesInIgnoreCase(searchCriteria.getCategories());
+        } else if (!isNull(searchCriteria.getKeywords())) {
+            return pointOfInterestRepository.findAllByKeywordsInIgnoreCase(searchCriteria.getKeywords());
+        } else if (!isNull(searchCriteria.getSearchText())) {
+            return pointOfInterestRepository.findAllByTitleInIgnoreCase(searchCriteria.getSearchText());
+        } else {
+            return pointOfInterestRepository.findAll();
+        }
+    }
+
     @Override
     public List<PointOfInterest> filterByDistance(List<PointOfInterest> pointsOfInterest, double distanceInMeters) {
-        log.info("MapUtilService::filterByDistance() , pointsOfInterest size: {} , distanceInMeters: {}", pointsOfInterest.size(), distanceInMeters);
+        log.debug("MapUtilService::filterByDistance() , pointsOfInterest size: {} , distanceInMeters: {}", pointsOfInterest.size(), distanceInMeters);
         List<PointOfInterest> filteredResults = new ArrayList<>();
 
         for (PointOfInterest poi : pointsOfInterest) {
@@ -163,7 +140,7 @@ public class MapUtilServiceImpl implements MapUtilService {
 
     @Override
     public List<Category> getAllCategories() {
-        log.info("MapUtilService::getAllCategories()");
+        log.debug("MapUtilService::getAllCategories()");
         return categoryRepository.findAll();
     }
 

@@ -1,10 +1,9 @@
 package com.technology.technologysoftware.controller;
 
 import com.technology.technologysoftware.domain.Category;
-import com.technology.technologysoftware.domain.request.searchPois.SearchPoisRequest;
-import com.technology.technologysoftware.domain.response.login.LoginResponse;
+import com.technology.technologysoftware.domain.request.search_pois.SearchPoisRequest;
 import com.technology.technologysoftware.domain.response.login.UnauthorizedErrorResponse;
-import com.technology.technologysoftware.domain.response.searchPois.SearchPoisResponse;
+import com.technology.technologysoftware.domain.response.search_pois.SearchPoisResponse;
 import com.technology.technologysoftware.service.MapUtilService;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

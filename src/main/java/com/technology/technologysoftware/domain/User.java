@@ -2,13 +2,14 @@ package com.technology.technologysoftware.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Pattern;
@@ -50,8 +51,8 @@ public class User {
 
 
     public User(String username, String email, String encode) {
-        this.username=username;
-        this.email=email;
-        this.password=encode;
+        this.username = username;
+        this.email = email;
+        this.password = encode;
     }
 }

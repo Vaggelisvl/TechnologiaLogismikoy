@@ -13,52 +13,59 @@ import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static java.util.Objects.isNull;
+
 @ControllerAdvice
 public class ExceptionHandlerController {
+
+    private static final String ERROR_MESSAGE = "errors";
+    private static final String TIMESTAMP = "timestamp";
+    private static final String STATUS = "status";
 
     @ExceptionHandler(value = TokenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ResponseEntity<Object> handleTokenRefreshException(TokenException ex, WebRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now().toString());
-        body.put("status", HttpStatus.FORBIDDEN.value());
+        body.put(TIMESTAMP, LocalDateTime.now().toString());
+        body.put(STATUS, HttpStatus.FORBIDDEN.value());
 
-        if (ex.getCause() != null) {
-            body.put("errors", ex.getCause().getMessage());
+        if (!isNull(ex.getCause())) {
+            body.put(ERROR_MESSAGE, ex.getCause().getMessage());
         } else {
-            body.put("errors", ex.getMessage());
+            body.put(ERROR_MESSAGE, ex.getMessage());
         }
 
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
     }
+
     @ExceptionHandler(value = NumberFormatException.class)
     public ResponseEntity<Object> handleNumberFormatException(NumberFormatException ex, WebRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now().toString());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put(TIMESTAMP, LocalDateTime.now().toString());
+        body.put(STATUS, HttpStatus.BAD_REQUEST.value());
 
-        if (ex.getCause() != null) {
-            body.put("errors", ex.getCause().getMessage());
+        if (!isNull(ex.getCause())) {
+            body.put(ERROR_MESSAGE, ex.getCause().getMessage());
         } else {
-            body.put("errors", ex.getMessage());
+            body.put(ERROR_MESSAGE, ex.getMessage());
         }
 
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
     }
+
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleNumberFormatException(MethodArgumentNotValidException ex, WebRequest request) {
         Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", LocalDateTime.now().toString());
-        body.put("status", HttpStatus.BAD_REQUEST.value());
-        if(ex.getBindingResult().getFieldError()!=null)
-            body.put("errors", ex.getBindingResult().getFieldError().getDefaultMessage());
+        body.put(TIMESTAMP, LocalDateTime.now().toString());
+        body.put(STATUS, HttpStatus.BAD_REQUEST.value());
+        if (!isNull(ex.getBindingResult().getFieldError()))
+            body.put(ERROR_MESSAGE, ex.getBindingResult().getFieldError().getDefaultMessage());
         else
-            body.put("errors", ex.getMessage());
+            body.put(ERROR_MESSAGE, ex.getMessage());
 
 
         return new ResponseEntity<>(body, HttpStatus.FORBIDDEN);
     }
-
 
 
 }

@@ -1,8 +1,7 @@
 package com.technology.technologysoftware.controller;
 
 
-import com.technology.technologysoftware.domain.response.importData.ImportDataResponse;
-import com.technology.technologysoftware.domain.response.login.LoginResponse;
+import com.technology.technologysoftware.domain.response.import_data.ImportDataResponse;
 import com.technology.technologysoftware.domain.response.login.UnauthorizedErrorResponse;
 import com.technology.technologysoftware.service.ImportDataService;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,7 +28,7 @@ public class ImportDataController {
             @ApiResponse(responseCode = "401", content = {@Content(schema = @Schema(implementation = UnauthorizedErrorResponse.class))})
     })
     @PostMapping("/{type}")
-    public ResponseEntity<?> importData(@RequestHeader("x-api-token") String token,@PathVariable String type, @RequestParam("file") MultipartFile file) {
-        return importDataService.importData(token,type,file);
+    public ResponseEntity<?> importData(@RequestHeader("x-api-token") String token, @PathVariable String type, @RequestParam("file") MultipartFile file) {
+        return importDataService.importData(token, type, file);
     }
 }

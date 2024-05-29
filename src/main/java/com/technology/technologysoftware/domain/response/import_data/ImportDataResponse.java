@@ -1,4 +1,4 @@
-package com.technology.technologysoftware.domain.response.importData;
+package com.technology.technologysoftware.domain.response.import_data;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -20,7 +20,7 @@ public class ImportDataResponse {
     @JsonProperty("data")
     private List<DataItem> data;
 
-    public interface DataItem {};
+    public interface DataItem {}
 
 
     @Data

@@ -1,4 +1,4 @@
-package com.technology.technologysoftware.domain.request.searchPois;
+package com.technology.technologysoftware.domain.request.search_pois;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;

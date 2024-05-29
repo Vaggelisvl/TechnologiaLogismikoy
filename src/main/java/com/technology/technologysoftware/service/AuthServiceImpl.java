@@ -25,12 +25,15 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.lang.Boolean.TRUE;
+import static java.util.Objects.isNull;
+
 @Service
 @Slf4j
 public class AuthServiceImpl implements AuthService{
     private final AuthenticationManager authenticationManager;
 
-
+    private static final String ROLE_NOT_FOUND_ERROR = "Error: Role has not be found.";
     private final UserRepository userRepository;
 
 
@@ -70,13 +73,13 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public ResponseEntity<?> registerUser(UserRegistrationRequest userRegistrationRequest) {
         log.info("AuthServiceImpl::registerUser() UserRegistrationRequest : {}",userRegistrationRequest);
-        if (userRepository.existsByUsername(userRegistrationRequest.getUsername())) {
+        if (TRUE.equals(userRepository.existsByUsername(userRegistrationRequest.getUsername()))) {
             return ResponseEntity
                     .badRequest()
                     .body("Error: Username is already taken!");
         }
 
-        if (userRepository.existsByEmail(userRegistrationRequest.getEmail())) {
+        if (TRUE.equals(userRepository.existsByEmail(userRegistrationRequest.getEmail()))) {
             return ResponseEntity
                     .badRequest()
                     .body("Error: Email is already in use!");
@@ -90,28 +93,28 @@ public class AuthServiceImpl implements AuthService{
         Set<String> strRoles = userRegistrationRequest.getRoles();
         Set<Role> roles = new HashSet<>();
 
-        if (strRoles==null) {
+        if (isNull(strRoles)) {
             Role userRole = roleRepository.findByName(UserRole.VISITOR)
-                    .orElseThrow(() -> new RuntimeException("Error: Role has not be found."));
+                    .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND_ERROR));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
                 switch (role) {
                     case "admin":
                         Role adminRole = roleRepository.findByName(UserRole.ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role has not be found."));
+                                .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND_ERROR));
                         roles.add(adminRole);
 
                         break;
                     case "regular":
                         Role modRole = roleRepository.findByName(UserRole.REGULAR)
-                                .orElseThrow(() -> new RuntimeException("Error: Role has not be found."));
+                                .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND_ERROR));
                         roles.add(modRole);
 
                         break;
                     default:
                         Role userRole = roleRepository.findByName(UserRole.VISITOR)
-                                .orElseThrow(() -> new RuntimeException("Error: Role has not be found."));
+                                .orElseThrow(() -> new RuntimeException(ROLE_NOT_FOUND_ERROR));
                         roles.add(userRole);
                 }
             });

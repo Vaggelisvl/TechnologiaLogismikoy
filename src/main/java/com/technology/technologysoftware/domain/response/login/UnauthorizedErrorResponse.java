@@ -14,5 +14,4 @@ public class UnauthorizedErrorResponse {
     private String message;
     private String path;
 
-    // Constructor, getters, and setters
 }

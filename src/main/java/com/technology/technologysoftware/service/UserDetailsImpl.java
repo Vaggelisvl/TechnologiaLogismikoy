@@ -3,18 +3,16 @@ package com.technology.technologysoftware.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.technology.technologysoftware.domain.User;
-import com.technology.technologysoftware.domain.UserRole;
-import com.technology.technologysoftware.repository.RoleRepository;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
+@Getter
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
@@ -28,8 +26,6 @@ public class UserDetailsImpl implements UserDetails {
     @JsonIgnore
     private final String password;
 
-
-    private RoleRepository roleRepository;
 
     private final Collection<? extends GrantedAuthority> authorities;
 
@@ -60,13 +56,6 @@ public class UserDetailsImpl implements UserDetails {
         return authorities;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getEmail() {
-        return email;
-    }
 
     @Override
     public String getPassword() {
