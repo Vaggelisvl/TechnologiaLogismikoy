@@ -106,7 +106,7 @@ public class ImportDataServiceImpl implements ImportDataService {
                 .filter(s -> !s.isEmpty())
                 .collect(Collectors.toList());
 
-        List<Category> categoryList = this.assingPoisCatories(categoriesStringList);
+        List<Category> categoryList = this.assignPoisCategories(categoriesStringList);
 
         return createPoi(timestampAdded, title, description, latitude, longitude, keywords, categoryList);
     }
@@ -210,7 +210,7 @@ public class ImportDataServiceImpl implements ImportDataService {
     }
 
     @Override
-    public List<Category> assingPoisCatories(List<String> categories) {
+    public List<Category> assignPoisCategories(List<String> categories) {
         List<Category> categoryList = new ArrayList<>();
         if (categories != null) {
             List<String> categoriesName = processCategoryNames(categories);

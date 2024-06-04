@@ -56,16 +56,27 @@ The application provides endpoints for user registration, user authentication, i
 
 
 ## Requirements:
-MongoDB image on docker .
-Java Version 11
+### MongoDB image on docker :
+
+- Establish a directory for storing the database data files, for instance, $home/databases/mongo.
+- Launch a Powershell terminal and execute the subsequent command to fetch and initiate the most recent MongoDB Community Server as a Docker image. Be aware that the MONGO_INITDB_ROOT_USERNAME and MONGO_INITDB_ROOT_PASSWORD you are prompted to input are the credentials for the administrator.
+```bash
+docker run -d --name mongo -e MONGO_INITDB_ROOT_USERNAME=<USERNAME> -e MONGO_INITDB_ROOT_PASSWORD=<PASSWORD> -p 27017:27017 -v $home/dbdata/mongo:/data/db mongo --wiredTigerCacheSizeGB 0.5
+```
+- Bear in mind that Mongo, by default, assigns the wiredTigerCacheSizeGB a value that is relative to the total memory of the host, irrespective of any memory restrictions you might have set on the container. In such a scenario, you should adjust the cache size to a suitable value, considering any other processes that might be running in the container and also consuming memory. Refer to the "WiredTiger Options" documentation for more information.
+-  Procure a client GUI for MongoDB connectivity. You have the option to select either Mongo Compass or Studio3T. Establish a connection using the credentials you supplied earlier, and you are all set to begin utilizing Mongo.
+
+- Java Version 11
 
 Steps:
-Clone the repository to your local machine.
-Modify the application-local.properties by changing the MongoDB properties values and provide those you set on installation of MongoDB on docker.
-Edit Run/Debug Configurations by simply define the Active profile that app will use . Set the field with value :local
-Run the application .
-When you run the application for the first time you have to initialize the table roles in mongoDB .Simply make a POST call to endpoint http://localhost:8080/api/v1/map-services/auth/initialize .
-If your application is running on different port make sure to replace it with the right one .
+- Clone the repository to your local machine.
+- Modify the application-local.properties by changing the MongoDB properties values and provide those you set on installation of MongoDB on docker.
+- Edit Run/Debug Configurations by simply define the Active profile that app will use . 
+- Set the field with value :local
+- Run the application .
+- When you run the application for the first time you have to initialize the table roles in mongoDB .
+- Simply make a POST call to endpoint http://localhost:8080/api/v1/map-services/auth/initialize .
+- If your application is running on different port make sure to replace it with the right one .
 
 Swagger:
 You can access the Swagger by visiting the url localhost:8080/swagger-ui/index.html#/ for more details 
